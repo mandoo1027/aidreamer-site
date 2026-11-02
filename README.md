@@ -6,7 +6,7 @@
 - `CNAME` — GitHub Pages 커스텀 도메인 설정
 - DNS: 닷네임 A 레코드 4개 → GitHub Pages
 
-플로우맵 앱과 약관은 `flowmap.aidreamer.co.kr` 에 따로 있다(base44).
+플로우맵 앱은 `flowmap.aidreamer.co.kr` 에 따로 있다(base44).
 
 ## flowmap/
 
