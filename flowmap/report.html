@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#faf8f3">
+<title>권리침해 신고 · 지금, 거기 어때?</title>
+<link rel="canonical" href="https://aidreamer.co.kr/flowmap/report">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root { --bg:#faf8f3; --ink:#141a1c; --text:#4d483e; --sub:#8c8678; --faint:#a8a294; --line:#e9e4d9; --red:#c2410c; --ok:#047857; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif; font-size:14px; line-height:1.75; }
+  main { max-width:640px; margin:0 auto; padding:40px 20px 64px; }
+  a.back { font-size:12px; font-weight:600; color:var(--sub); text-decoration:none; }
+  h1 { margin:16px 0 4px; font-size:24px; font-weight:900; letter-spacing:-.02em; color:var(--ink); }
+  .date { font-size:12px; font-weight:600; color:var(--faint); margin:0; }
+  h2 { font-size:15px; font-weight:700; color:var(--ink); margin:28px 0 8px; }
+  ol, ul { padding-left:20px; margin:0; } li { margin:2px 0; }
+  .box { background:#fff; border:1px solid var(--line); border-radius:20px; padding:18px; margin-top:12px; }
+  label { display:block; font-size:12px; font-weight:700; color:var(--sub); margin:14px 0 6px; }
+  input, select, textarea { width:100%; font:inherit; font-size:14px; color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+  textarea { min-height:140px; resize:vertical; }
+  .row { display:flex; gap:10px; } .row > div { flex:1; }
+  .check { display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:var(--text); margin-top:16px; font-weight:500; }
+  .check input { width:auto; margin-top:4px; }
+  button { margin-top:18px; width:100%; height:50px; border:0; border-radius:16px; background:var(--ink); color:var(--bg); font:inherit; font-weight:700; font-size:14px; cursor:pointer; }
+  button:disabled { background:#e6e1d4; color:var(--faint); cursor:default; }
+  .msg { margin-top:12px; font-size:13px; font-weight:600; }
+  .msg.err { color:var(--red); } .msg.ok { color:var(--ok); }
+  .note { font-size:12px; color:var(--sub); }
+  .hp { position:absolute; left:-9999px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="https://flowmap.aidreamer.co.kr/">← 지금, 거기 어때?</a>
+  <h1>권리침해 신고</h1>
+  <p class="date">업소 대표·직원용 · 앱 가입 없이 신고할 수 있어요</p>
+
+  <p style="margin-top:20px">
+    ‘지금, 거기 어때?’에 올라온 제보 때문에 업소의 명예나 영업이 침해됐다고 생각하시면 아래로 삭제를 요청해 주세요.
+    제보는 이용자가 직접 올린 것이며, 회사가 사실 여부를 보증하지 않습니다.
+  </p>
+
+  <h2>처리 절차 (정보통신망법 제44조의2)</h2>
+  <ol>
+    <li>신고가 접수되면 담당자에게 바로 알림이 가고, <b>지체 없이</b> 확인합니다.</li>
+    <li>침해가 분명하면 삭제하고, 판단이 어려우면 <b>최대 30일 동안 보이지 않게 가리는 임시조치</b>를 합니다.</li>
+    <li>처리 결과를 적어 주신 연락처로 알려 드리고, 제보 작성자에게도 알립니다.</li>
+    <li>작성자가 이의를 제기하면 임시조치 기간 안에 삭제 또는 복원을 결정합니다.</li>
+  </ol>
+  <p class="note" style="margin-top:8px">
+    같은 사람이 특정 업소에 반복해서 허위 제보를 한 것이 확인되면 그 사람의 이용을 제한합니다.
+    법원·수사기관의 적법한 요청이 있으면 관련 법령에 따라 작성자 정보를 제공할 수 있습니다.
+  </p>
+
+  <h2>신고서</h2>
+  <form id="f" class="box" novalidate>
+    <label for="place_name">업소 이름 *</label>
+    <input id="place_name" maxlength="80" required placeholder="앱에 표시된 이름 그대로">
+    <label for="place_address">업소 주소</label>
+    <input id="place_address" maxlength="120" placeholder="같은 이름 업소를 구분하기 위해">
+    <div class="row">
+      <div>
+        <label for="claimant_name">신청인 이름 *</label>
+        <input id="claimant_name" maxlength="40" required>
+      </div>
+      <div>
+        <label for="claimant_role">업소와의 관계</label>
+        <select id="claimant_role">
+          <option value="owner">대표</option>
+          <option value="manager">점장·직원</option>
+          <option value="agent">대리인</option>
+          <option value="etc">기타</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="contact_phone">전화번호</label>
+        <input id="contact_phone" maxlength="20" inputmode="tel" placeholder="결과 안내용">
+      </div>
+      <div>
+        <label for="contact_email">이메일</label>
+        <input id="contact_email" maxlength="80" type="email" placeholder="결과 안내용">
+      </div>
+    </div>
+    <p class="note" style="margin:6px 0 0">전화번호나 이메일 중 하나는 꼭 적어 주세요.</p>
+    <label for="kind">신고 종류 *</label>
+    <select id="kind">
+      <option value="false_info">사실과 다른 혼잡 정보(영업 방해)</option>
+      <option value="defamation">명예훼손·비방</option>
+      <option value="privacy">개인정보 노출</option>
+      <option value="etc">기타</option>
+    </select>
+    <label for="target">문제 되는 제보</label>
+    <input id="target" maxlength="300" placeholder="예) 11월 7일 오후 2시쯤 ‘붐빔’, 코멘트 ‘…’">
+    <label for="reason">침해 사유와 소명 * (10자 이상)</label>
+    <textarea id="reason" maxlength="1500" required placeholder="실제 상황과 어떻게 다른지, 어떤 피해가 있었는지 적어 주세요. 그 시간대 영업 상황을 보여 주는 근거(예: 매장 사진, 예약 기록)가 있으면 함께 알려 주세요."></textarea>
+    <input id="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <label class="check"><input type="checkbox" id="agree">
+      <span>신고 처리와 결과 안내를 위해 이름·연락처·업소 정보·신고 내용을 수집·이용하는 데 동의합니다. 처리 완료 후 1년 보관 뒤 파기합니다(<a href="privacy">개인정보처리방침</a>).</span>
+    </label>
+    <button type="submit" id="send">신고 접수</button>
+    <p id="msg" class="msg" role="status" aria-live="polite"></p>
+  </form>
+
+  <p class="note" style="margin-top:20px">
+    신고서가 보내지지 않으면 <a href="mailto:psychp3349@gmail.com?subject=%5B%EA%B1%B0%EA%B8%B0%20%EC%96%B4%EB%95%8C%5D%20%EA%B6%8C%EB%A6%AC%EC%B9%A8%ED%95%B4%20%EC%8B%A0%EA%B3%A0">psychp3349@gmail.com</a> 로 같은 내용을 보내 주세요.<br>
+    에이아이드리머 · 대표 박기호 · 사업자등록번호 876-73-00487 · <a href="terms">이용약관</a>
+  </p>
+</main>
+<script>
+  // 접수는 앱 서버 함수(owner-claim)로. 로그인 없이 받고, 담당자에게 메일로 알린다.
+  const ENDPOINT = 'https://base44.app/api/apps/6ae6abc35d569c7489dcf8f7/functions/owner-claim';
+  const $ = (id) => document.getElementById(id);
+  $('f').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = $('msg'), btn = $('send');
+    msg.className = 'msg'; msg.textContent = '';
+    const data = {};
+    for (const k of ['place_name','place_address','claimant_name','claimant_role','contact_phone','contact_email','kind','target','reason','website']) data[k] = $(k).value.trim();
+    data.agree = $('agree').checked;
+    const fail = (t) => { msg.className = 'msg err'; msg.textContent = t; };
+    if (!data.place_name || !data.claimant_name) return fail('업소 이름과 신청인 이름을 적어 주세요.');
+    if (!data.contact_phone && !data.contact_email) return fail('결과를 알려 드릴 전화번호나 이메일을 적어 주세요.');
+    if (data.reason.length < 10) return fail('침해 사유를 10자 이상 적어 주세요.');
+    if (!data.agree) return fail('개인정보 수집·이용에 동의해 주세요.');
+    btn.disabled = true; btn.textContent = '보내는 중…';
+    try {
+      const res = await fetch(ENDPOINT, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.ok) throw new Error(out.error || '접수하지 못했어요.');
+      $('f').reset();
+      msg.className = 'msg ok';
+      msg.textContent = '접수됐어요' + (out.id ? ` (접수번호 ${String(out.id).slice(-8)})` : '') + '. 확인 후 적어 주신 연락처로 결과를 알려 드릴게요.';
+      btn.textContent = '접수 완료';
+    } catch (err) {
+      fail((err && err.message) || '접수하지 못했어요. 아래 이메일로 보내 주세요.');
+      btn.disabled = false; btn.textContent = '신고 접수';
+    }
+  });
+</script>
+</body>
+</html>
