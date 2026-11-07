@@ -30,6 +30,13 @@
   .msg.err { color:var(--red); } .msg.ok { color:var(--ok); }
   .note { font-size:12px; color:var(--sub); }
   .hp { position:absolute; left:-9999px; }
+  .addr { display:flex; gap:8px; } .addr input { flex:1; background:#fbfaf6; cursor:pointer; }
+  button.small { margin:0; width:auto; height:auto; padding:0 16px; border-radius:12px; font-size:13px; white-space:nowrap; }
+  #addrLayer { display:none; position:fixed; inset:0; z-index:50; background:rgba(20,26,28,.45); }
+  #addrLayer .sheet { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(92vw,520px); height:min(80vh,560px); background:#fff; border-radius:18px; overflow:hidden; display:flex; flex-direction:column; }
+  #addrLayer .bar { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; font-weight:700; color:var(--ink); border-bottom:1px solid var(--line); }
+  #addrLayer .bar button { margin:0; width:auto; height:auto; padding:4px 10px; background:none; color:var(--sub); font-size:13px; }
+  #addrWrap { flex:1; }
 </style>
 </head>
 <body>
@@ -60,7 +67,11 @@
     <label for="place_name">업소 이름 *</label>
     <input id="place_name" maxlength="80" required placeholder="앱에 표시된 이름 그대로">
     <label for="place_address">업소 주소</label>
-    <input id="place_address" maxlength="120" placeholder="같은 이름 업소를 구분하기 위해">
+    <div class="addr">
+      <input id="place_address" maxlength="120" placeholder="주소 검색을 눌러 주세요" readonly>
+      <button type="button" id="addrBtn" class="small">주소 검색</button>
+    </div>
+    <input id="place_address_detail" maxlength="60" placeholder="상세 주소(층·호수, 선택)" style="margin-top:8px">
     <div class="row">
       <div>
         <label for="claimant_name">신청인 이름 *</label>
@@ -111,6 +122,40 @@
     에이아이드리머 · 대표 박기호 · 사업자등록번호 876-73-00487 · <a href="terms">이용약관</a>
   </p>
 </main>
+<div id="addrLayer" role="dialog" aria-label="주소 검색">
+  <div class="sheet">
+    <div class="bar"><span>업소 주소 검색</span><button type="button" id="addrClose">닫기</button></div>
+    <div id="addrWrap"></div>
+  </div>
+</div>
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+  // 업소 주소: 카카오(다음) 우편번호 서비스 — 키 없이 무료. 화면 안에 띄워 휴대폰에서도 팝업 차단 없이 쓴다
+  (function () {
+    const layer = document.getElementById('addrLayer');
+    const close = () => { layer.style.display = 'none'; };
+    function open() {
+      if (!window.daum || !daum.Postcode) { document.getElementById('place_address').readOnly = false; document.getElementById('place_address').focus(); return; }
+      layer.style.display = 'block';
+      new daum.Postcode({
+        oncomplete: function (d) {
+          let addr = d.roadAddress || d.jibunAddress || d.address;
+          const extra = [d.bname && /[동로가]$/.test(d.bname) ? d.bname : '', d.buildingName && d.apartment === 'Y' ? d.buildingName : (d.buildingName || '')].filter(Boolean);
+          if (extra.length) addr += ' (' + Array.from(new Set(extra)).join(', ') + ')';
+          document.getElementById('place_address').value = addr;
+          if (!document.getElementById('place_name').value && d.buildingName) document.getElementById('place_name').value = d.buildingName;
+          close();
+          document.getElementById('place_address_detail').focus();
+        },
+        width: '100%', height: '100%',
+      }).embed(document.getElementById('addrWrap'), { autoClose: true });
+    }
+    document.getElementById('addrBtn').addEventListener('click', open);
+    document.getElementById('place_address').addEventListener('click', open);
+    document.getElementById('addrClose').addEventListener('click', close);
+    layer.addEventListener('click', (e) => { if (e.target === layer) close(); });
+  })();
+</script>
 <script>
   // 접수는 앱 서버 함수(owner-claim)로. 로그인 없이 받고, 담당자에게 메일로 알린다.
   const ENDPOINT = 'https://base44.app/api/apps/6ae6abc35d569c7489dcf8f7/functions/owner-claim';
@@ -121,6 +166,8 @@
     msg.className = 'msg'; msg.textContent = '';
     const data = {};
     for (const k of ['place_name','place_address','claimant_name','claimant_role','contact_phone','contact_email','kind','target','reason','website']) data[k] = $(k).value.trim();
+    const detail = $('place_address_detail').value.trim();
+    if (detail) data.place_address = (data.place_address + ' ' + detail).trim();
     data.agree = $('agree').checked;
     const fail = (t) => { msg.className = 'msg err'; msg.textContent = t; };
     if (!data.place_name || !data.claimant_name) return fail('업소 이름과 신청인 이름을 적어 주세요.');
