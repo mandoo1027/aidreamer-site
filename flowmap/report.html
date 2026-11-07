@@ -30,6 +30,9 @@
   .msg.err { color:var(--red); } .msg.ok { color:var(--ok); }
   .note { font-size:12px; color:var(--sub); }
   .hp { position:absolute; left:-9999px; }
+  .fe { margin:4px 0 0; min-height:0; font-size:12px; font-weight:600; color:var(--red); }
+  input.bad { border-color:var(--red); }
+  @media (max-width:480px) { .row { flex-direction:column; gap:0; } }
   .addr { display:flex; gap:8px; } .addr input { flex:1; background:#fbfaf6; cursor:pointer; }
   button.small { margin:0; width:auto; height:auto; padding:0 16px; border-radius:12px; font-size:13px; white-space:nowrap; }
   #addrLayer { display:none; position:fixed; inset:0; z-index:50; background:rgba(20,26,28,.45); }
@@ -90,11 +93,13 @@
     <div class="row">
       <div>
         <label for="contact_phone">전화번호</label>
-        <input id="contact_phone" maxlength="20" inputmode="tel" placeholder="결과 안내용">
+        <input id="contact_phone" maxlength="14" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000">
+        <p class="fe" id="contact_phone_err"></p>
       </div>
       <div>
         <label for="contact_email">이메일</label>
-        <input id="contact_email" maxlength="80" type="email" placeholder="결과 안내용">
+        <input id="contact_email" maxlength="80" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com">
+        <p class="fe" id="contact_email_err"></p>
       </div>
     </div>
     <p class="note" style="margin:6px 0 0">전화번호나 이메일 중 하나는 꼭 적어 주세요.</p>
@@ -157,6 +162,44 @@
   })();
 </script>
 <script>
+  // 전화번호: 숫자만 받아 지역번호 규칙대로 하이픈을 넣는다(휴대폰·서울 02·지역 0XX·070·050X 안심번호·15XX 대표번호)
+  function formatPhone(v) {
+    const d = (v || '').replace(/\D/g, '').slice(0, 12);
+    if (/^1[5-9]/.test(d)) return d.length > 4 ? d.slice(0, 4) + '-' + d.slice(4, 8) : d;
+    if (d.startsWith('02')) {
+      if (d.length <= 2) return d;
+      if (d.length <= 5) return '02-' + d.slice(2);
+      if (d.length <= 9) return '02-' + d.slice(2, 5) + '-' + d.slice(5);
+      return '02-' + d.slice(2, 6) + '-' + d.slice(6, 10);
+    }
+    if (/^050\d/.test(d)) {
+      if (d.length <= 4) return d;
+      if (d.length <= 8) return d.slice(0, 4) + '-' + d.slice(4);
+      return d.slice(0, 4) + '-' + d.slice(4, 8) + '-' + d.slice(8, 12);
+    }
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return d.slice(0, 3) + '-' + d.slice(3);
+    if (d.length <= 10) return d.slice(0, 3) + '-' + d.slice(3, 6) + '-' + d.slice(6);
+    return d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7, 11);
+  }
+  const PHONE_RE = /^(01[016789]-\d{3,4}-\d{4}|02-\d{3,4}-\d{4}|0[3-6][1-5]-\d{3,4}-\d{4}|070-\d{4}-\d{4}|050\d-\d{4}-\d{4}|1[5-9]\d{2}-\d{4})$/;
+  const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  function phoneError(v) { return !v ? '' : PHONE_RE.test(v) ? '' : '전화번호를 확인해 주세요. (예: 010-1234-5678, 02-123-4567)'; }
+  function emailError(v) { return !v ? '' : EMAIL_RE.test(v) ? '' : '이메일 주소를 확인해 주세요. (예: name@example.com)'; }
+  function showErr(id, msg) {
+    document.getElementById(id + '_err').textContent = msg;
+    document.getElementById(id).classList.toggle('bad', Boolean(msg));
+    return !msg;
+  }
+  (function () {
+    const phone = document.getElementById('contact_phone'), email = document.getElementById('contact_email');
+    phone.addEventListener('input', () => { phone.value = formatPhone(phone.value); if (phone.classList.contains('bad')) showErr('contact_phone', phoneError(phone.value)); });
+    phone.addEventListener('blur', () => showErr('contact_phone', phoneError(phone.value)));
+    email.addEventListener('input', () => { email.value = email.value.replace(/\s/g, ''); if (email.classList.contains('bad')) showErr('contact_email', emailError(email.value)); });
+    email.addEventListener('blur', () => showErr('contact_email', emailError(email.value)));
+  })();
+</script>
+<script>
   // 접수는 앱 서버 함수(owner-claim)로. 로그인 없이 받고, 담당자에게 메일로 알린다.
   const ENDPOINT = 'https://base44.app/api/apps/6ae6abc35d569c7489dcf8f7/functions/owner-claim';
   const $ = (id) => document.getElementById(id);
@@ -172,6 +215,9 @@
     const fail = (t) => { msg.className = 'msg err'; msg.textContent = t; };
     if (!data.place_name || !data.claimant_name) return fail('업소 이름과 신청인 이름을 적어 주세요.');
     if (!data.contact_phone && !data.contact_email) return fail('결과를 알려 드릴 전화번호나 이메일을 적어 주세요.');
+    const okPhone = showErr('contact_phone', phoneError(data.contact_phone));
+    const okEmail = showErr('contact_email', emailError(data.contact_email));
+    if (!okPhone || !okEmail) return fail('전화번호나 이메일 형식을 확인해 주세요.');
     if (data.reason.length < 10) return fail('침해 사유를 10자 이상 적어 주세요.');
     if (!data.agree) return fail('개인정보 수집·이용에 동의해 주세요.');
     btn.disabled = true; btn.textContent = '보내는 중…';
