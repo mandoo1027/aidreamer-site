@@ -148,7 +148,6 @@
           const extra = [d.bname && /[동로가]$/.test(d.bname) ? d.bname : '', d.buildingName && d.apartment === 'Y' ? d.buildingName : (d.buildingName || '')].filter(Boolean);
           if (extra.length) addr += ' (' + Array.from(new Set(extra)).join(', ') + ')';
           document.getElementById('place_address').value = addr;
-          if (!document.getElementById('place_name').value && d.buildingName) document.getElementById('place_name').value = d.buildingName;
           close();
           document.getElementById('place_address_detail').focus();
         },
